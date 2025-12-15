@@ -3,6 +3,8 @@ package edu.cifpfbmoll.fibonacci;
 public class Fibonacci {
 
     public int calculate(int n) {
-        return 0; // implementación inicial
+        if (n == 0) return 0;
+        if (n == 1) return 1;
+        return calculate(n - 1) + calculate(n - 2);
     }
 }
