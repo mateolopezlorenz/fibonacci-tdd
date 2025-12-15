@@ -1,1 +1,28 @@
+# Compiled class files
 target/
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# Maven
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
