@@ -31,4 +31,19 @@ class FibonacciTest {
     void fibonacciOfFiveIsFive() {
         assertEquals(5, fibonacci.calculate(5));
     }
+
+    @Test
+    void fibonacciOfSixIsEight() {
+        assertEquals(8, fibonacci.calculate(6));
+    }
+
+    @Test
+    void fibonacciOfSevenIsThirteen() {
+        assertEquals(13, fibonacci.calculate(7));
+    }
+
+    @Test
+    void fibonacciOfEightIsTwentyOne() {
+        assertEquals(21, fibonacci.calculate(8));
+    }
 }
