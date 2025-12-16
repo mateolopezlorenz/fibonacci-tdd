@@ -1,6 +1,9 @@
 package edu.cifpfbmoll.fibonacci;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.Test;
 
 class FibonacciTest {
@@ -15,6 +18,11 @@ class FibonacciTest {
     @Test
     void fibonacciOfOneIsOne() {
         assertEquals(1, fibonacci.calculate(1));
+    }
+
+    @Test
+    void fibonacciOfTwoIsOne() {
+        assertEquals(1, fibonacci.calculate(2));
     }
 
     @Test
@@ -48,24 +56,15 @@ class FibonacciTest {
     }
 
     @Test
-    void fibonacciOfNineIsThirtyFour() {
-        assertEquals(34, fibonacci.calculate(9));
+    void fibonacciNegativeNumber() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            fibonacci.calculate(-1);
+        });
     }
 
     @Test
-    void fibonacciOfTenIsFiftyFive() {
-        assertEquals(55, fibonacci.calculate(10));
+    void fibonacciResultIsAlwaysNonNegative() {
+        int result = fibonacci.calculate(10);
+        assertTrue(result >= 0);
     }
-
-    @Test
-    void fibonacciOfElevenIsEightyNine() {
-        assertEquals(89, fibonacci.calculate(11));
-    }
-
-    @Test
-    void fibonacciOfTwelveIsOneHundredFortyFour() {
-        assertEquals(144, fibonacci.calculate(12));
-    }
-
-    
 }

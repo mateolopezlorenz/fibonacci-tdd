@@ -102,7 +102,7 @@ Resum de comandes Maven:
 | `mvn test`       | Executa tots els tests                            |
 | `mvn clean`      | Elimina els fitxers compilats (carpeta `target/`) |
 | `mvn clean test` | Neteja i executa tests                            |
-| `mvn package`    | Compila i empaqueta el projecte en un JAR         |
+| `mvn package`    | Compila, valida i empaqueta el projecte en un JAR |
 
 ## Fitxer .gitignore
 
@@ -189,7 +189,7 @@ package eu.cifpfbmoll;
 public class Fibonacci {
 
     public int calculate(int n) {
-        return 0; // Implementació incorrecta inicial
+        return -1; // Implementació incorrecta inicial
     }
 }
 ```
@@ -213,6 +213,14 @@ class FibonacciTest {
 }
 ```
 
+## Cicle TDD
+
+El cicle TDD segueix tres passos: Red → Green → Refactor.
+
+1. `Red`: Escriu un test que falli.
+2. `Green`: Escriu el codi mínim per fer passar el test.
+3. `Refactor`: Millora el codi sense canviar el comportament.
+
 ## Primera execució dels tests
 
 Tornam a usar la mateixa ordre per a executar el nostre primer test:
@@ -221,22 +229,27 @@ Tornam a usar la mateixa ordre per a executar el nostre primer test:
 mvn test
 ```
 
-El primer test passa perquè `fibonacci(0)` ha de retornar `0`, i la nostra implementació inicial retorna `0`.
+El primer test no passa perquè `fibonacci(0)` ha de retornar `0`, i la nostra implementació inicial retorna `-1`.
+
+```console
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+[INFO] BUILD FAILURE
+```
+
+### Execici guiat
+
+Pas 0: Escrivim el mínim codi necessari per a passar el nostre primer test (en aquest cas, canviam el `return -1` per un `return 0`) i executam els tests:
+
+```bash
+mvn test
+```
+
+Ara el test passa perquè `fibonacci(0)` ha de retornar `0`, i la nostra implementació actual ara retorna `0`.
 
 ```console
 [INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BUILD SUCCESS
 ```
-
-## Cicle TDD
-
-El cicle TDD segueix tres passos: Red → Green → Refactor.
-
-1. Red: Escriu un test que falli.
-2. Green: Escriu el codi mínim per fer passar el test.
-3. Refactor: Millora el codi sense canviar el comportament.
-
-### Execici guiat
 
 Pas 1: Afegeix un test per a `fibonacci(1)`:
 
@@ -250,7 +263,7 @@ void fibonacciOfOneIsOne() {
 Executa `mvn test`. El test fallarà perquè retornem `0` sempre:
 
 ```console
-[INFO] Tests run: 2, Failures: 1, Errors: 0, Skipped: 0
+[ERROR] Tests run: 2, Failures: 1, Errors: 0, Skipped: 0
 [INFO] BUILD FAILURE
 ```
 
@@ -258,25 +271,180 @@ Pas 2: Volem passar de l'estat `Red` a l'estat `Green`. Per això ens cal modifi
 
 ```java
 public int calculate(int n) {
-    if (n == 0) return 0;
-    return 1;
+    if (n == 1) return 1;
+    return 0;
 }
 ```
 
-Executa `nvm test`. Tots els test passen.
+Executa `nvm test`. Tots els test passen:
 
-Pas 3: Hem de continuar el cicle. fegeix tests per a `fibonacci(2)`, `fibonacci(3)`, etc., i modifica la implementació fins arribar a la solució general.
+```console
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+```
+
+Pas 3: Hem de continuar el cicle. Afegeix tests per a `fibonacci(2)`, `fibonacci(3)`, etc., fins a `fibonacci(8)`, i modifica la implementació després d'haver afegit cada test.
 
 | n    | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7  | 8  |
 |------|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:--:|:--:|
 | F(n) | 0 | 1 | 1 | 2 | 3 | 5 | 8 | 13 | 21 |
 
+Eventualment, a mesura que anam afegint tests i el codi que fa que es passin, estant en un estat `Green`, serà un bon moment per a dur a terme una refactorització de codi. Aquestes refactoritzacions, eventualment ens duran a l'algorisme que considerem final:
+
+```java
+package eu.cifpfbmoll;
+
+public class Fibonacci {
+
+    public int calculate(int n) {
+        if (n <= 1) {
+            return n;
+        }
+            
+        int previous = 0;
+        int current = 1;
+
+        for (int i = 2; i <= n; i++) {
+            int next = previous + current;
+            previous = current;
+            current = next;
+        }
+
+        return current;
+    }
+}
+```
+
+Però encara ens faltaran més tests:
+
+* Validació de paràmetres d'entrada.
+* Validació de valors de sortida (generats pel nostre codi).
+
+Començarem per afegir els tests per a verificar que es valida l'entrada correctament i també per a verificar que la sortida és sempre un enter positiu:
+
+```java
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+@Test
+void fibonacciOfNegativeThrowsException() {
+    assertThrows(IllegalArgumentException.class, () -> fibonacci.calculate(-1));
+}
+
+@ParameterizedTest
+@ValueSource(ints = {0, 1, 2, 5, 10, 20})
+void fibonacciAlwaysReturnsNonNegativeValue(int n) {
+    assertTrue(fibonacci.calculate(n) >= 0);
+}
+```
+
+Per usar `@ParameterizedTest`, cal afegir la dependència `unit-jupiter-params` al `pom.xml`. Però si l'archetype 1.5 ja genera el projecte amb el BOM de JUnit 5.11.0, només cal afegir:
+
+```xml
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter-params</artifactId>
+    <scope>test</scope>
+</dependency>
+```
+
+Una vegada afegit els tests, afegirem validació del paràmetre d'entrada al mètode `calculate()` de la classe `Fibonacci`:
+
+```java
+public int calculate(int n) {
+    if (n < 0) {
+        throw new IllegalArgumentException("Només s'accepten enters iguals o majors que zero");
+    }
+    
+    if (n <= 1) {
+        return n;
+    }
+
+    [..]
+```
+
+## Flux principal d'execució
+
+Per acabar, opcionalment, podem afegir una classe `App` per a definir el flux principal d'execució. Per això, crearem el fitxer `src/main/java/eu/cifpfbmoll/App.java` amb el següent contingut:
+
+```java
+package eu.cifpfbmoll;
+
+public class App {
+
+    public static void main(String[] args) {
+        if (args.length != 1) {
+            System.err.println("Ús: java -jar fibonacci.jar <n>");
+            System.exit(1);
+        }
+
+        int n;
+        try {
+            n = Integer.parseInt(args[0]);
+        } catch (NumberFormatException e) {
+            System.err.println("Error: El paràmetre ha de ser un número enter");
+            System.exit(2);
+            return;
+        }
+
+        if (n < 0) {
+            System.err.println("Error: El paràmetre ha de ser major o igual que 0");
+            System.exit(2);
+        }
+
+        Fibonacci fib = new Fibonacci();
+        System.out.println(fib.calculate(n));
+    }
+}
+```
+
 ## Puja els canvis a Github
 
 Cada vegada que completis un cicle TDD, és a dir, un nou test que passa, puja els canvis:
 
-``bash
+```bash
 git add .
 git commit -m "Descripció del canvi"
 git push
+```
+
+## Executa el resultat final
+
+Una vegada hagis completat la implementació, pot usar l'ordre `mvn package` per a validar, compilar, testejar i empaquetar l'aplicació.
+
+Però, per a poder generar un JAR executable, primer hauràs configurar Maven per a crear un JAR executable. Per a això cal modificar el fitxer `pom.xml`, especificant la classe principal al plugin `maven-jar-plugin`:
+
+```xml
+<build>
+  <pluginManagement>
+    <plugins>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.4.2</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>eu.cifpfbmoll.App</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </pluginManagement>
+</build>
+```
+
+Ara ja pots executar `mvn package`:
+
+```bash
+[INFO] Building jar: ~/Projects/fibonacci-tdd/target/fibonacci-tdd-1.0-SNAPSHOT.jar
+[INFO] BUILD SUCCESS
+```
+
+I ja pots executar el programa:
+
+```bash
+java -jar target/fibonacci-tdd-1.0-SNAPSHOT.jar 10
 ```
