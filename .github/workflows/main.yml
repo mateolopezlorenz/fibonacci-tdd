@@ -18,3 +18,5 @@ jobs:
 
       - name: Ejecutar tests con Maven
         run: mvn test
+        working-directory: ./fibonacci-tdd
+
