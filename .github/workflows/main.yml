@@ -10,5 +10,11 @@ jobs:
       - name: Checkout del repositorio
         uses: actions/checkout@v4
 
-      - name: Comando mínimo para activar workflow
-        run: echo "Workflow funcionando"
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Ejecutar tests con Maven
+        run: mvn test
