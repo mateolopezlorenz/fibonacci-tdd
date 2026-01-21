@@ -1,0 +1,14 @@
+name: CI Java Fibonacci
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Comando mínimo para activar workflow
+        run: echo "Workflow funcionando"
