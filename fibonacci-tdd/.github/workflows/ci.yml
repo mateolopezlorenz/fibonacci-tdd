@@ -6,7 +6,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout del repositorio
-      uses: actions/checkout@v4
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
